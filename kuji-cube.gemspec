@@ -9,14 +9,14 @@ Gem::Specification.new do |gem|
   gem.description = "Eases the pain I had to go through to get to the data out of XMLA based OLAP provider(Mondiran, Pentaho, icCube)"
   gem.summary = "Get's the data from OLAP cube via XMLA(Mondiran, Pentaho, icCube)"
   gem.homepage = "http://github.com/kujilabs/cube"
-  gem.date = "2012-05-13"
+  gem.date = "2012-05-16"
 
 
   gem.licenses = ["MIT"]
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
-  gem.name          = "cube-no-apes"
+  gem.name          = "kuji-cube"
   gem.require_paths = ["lib"]
   gem.version = Cube::VERSION
 
