@@ -2,14 +2,11 @@
 require 'spec_helper'
 
 
-XMLA.configure do |c|
-  c.endpoint = "http://localhost:8282/icCube/xmla"
-  c.catalog = "GOSJAR"
-end
 
 
 describe XMLA::Cube do
   it 'supports multiple items on x axis' do
+    configure_icube
     VCR.use_cassette('kvatovi_u_koloni') do
       result = XMLA::Cube.execute("select [Lokacija].[Kvart].children  on COLUMNS, [Measures].[Broj] on ROWS from [GOSJAR]") 
       result.rows.count.should == 1
@@ -19,6 +16,7 @@ describe XMLA::Cube do
   end
 
   it 'supports multiple items on y axis' do
+    configure_icube
     VCR.use_cassette('kvartovi_u_recima') do
       result =  XMLA::Cube.execute("select [Measures].[Broj]  on COLUMNS, non empty topcount( [Lokacija].[Kvart].children, 100,  [Measures].[Broj]) on ROWS from [GOSJAR]")
       result.rows.count.should == 16
@@ -29,6 +27,7 @@ describe XMLA::Cube do
   end
 
   it 'support multiple items on y axis and multiple items on x axis' do
+    configure_icube
     VCR.use_cassette('razlog_prijave_i_kvart') do
       result = XMLA::Cube.execute("select [Measures].[Broj]  on COLUMNS, non empty topcount ( [Razlog prijave].[Razlog].children * [Lokacija].[Kvart].children , 20,  [Measures].[Broj] ) on ROWS from [GOSJAR]")
       result.rows.count.should == 20
@@ -39,6 +38,7 @@ describe XMLA::Cube do
   end
 
   it 'check if request is correct - to fix that bug with class varables not beign visible inside the block' do
+    configure_icube
     XMLA::Cube.send(:request_body, "SELECT", "GOSJAR").gsub("\n","").gsub(" ", "").should == 
       "<Command><Statement><![CDATA[SELECT]]></Statement></Command><Properties><PropertyList><Catalog>GOSJAR</Catalog>
        <Format>Multidimensional</Format><AxisFormat>TupleFormat</AxisFormat></PropertyList></Properties>".gsub("\n","").gsub(" ","")
@@ -116,4 +116,28 @@ describe XMLA::Cube do
 
   end
 
+  describe "getting the members only" do
+    before { configure_mondrian }
+
+    it "should allow queries with just column" do
+      VCR.use_cassette('member_query', :match_requests_on => [:body]) do
+        result = XMLA::Cube.execute_members <<-MDX
+        SELECT { [Category].[Energy].Children } on COLUMNS
+        FROM [Carbon]
+        MDX
+        result.should == [[["Electricity"], ["Natural Gas"]]]
+      end
+    end
+
+    it "should allow queries with just column" do
+      VCR.use_cassette('member_query', :match_requests_on => [:body] ) do
+        result = XMLA::Cube.execute_members <<-MDX
+        SELECT { [Category].[Energy].Children } on COLUMNS,
+               { [Entity].LastChild } on ROWS
+        FROM [Carbon]
+        MDX
+        result.should == [[["Electricity"], ["Natural Gas"]], [["Wrythe Green Surgery - General Practitioner"]]]
+      end
+    end
+  end
 end

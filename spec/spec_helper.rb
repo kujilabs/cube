@@ -20,6 +20,14 @@ end
 #   end
 # end
 
+
+def configure_icube
+  XMLA.configure do |c|
+    c.endpoint = "http://localhost:8282/icCube/xmla"
+    c.catalog = "GOSJAR"
+  end
+end
+
 def configure_mondrian
   XMLA.configure do |c|
     c.endpoint = "http://localhost:8383/mondrian/xmla"

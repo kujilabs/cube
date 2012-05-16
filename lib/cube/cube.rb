@@ -18,6 +18,10 @@ module XMLA
       OlapResult.new(Cube.new(query, catalog).as_table)
     end
 
+    def Cube.execute_members(query, catalog = XMLA.catalog)
+      Cube.new(query, catalog).axes
+    end
+
     def Cube.execute_scalar(query, catalog = XMLA.catalog)
       BigDecimal.new Cube.new(query, catalog).as_table[0]
     end
@@ -25,6 +29,22 @@ module XMLA
     def as_table 
       return [table] if y_size == 0
       clean_table(table, y_size).reduce([]) { |result, row| result << row.flatten }
+    end
+
+    def axes
+      axes = all_axes.select { |axe| axe[:@name] != "SlicerAxis" }
+      @axes ||= axes.reduce([]) do |result, axe|
+        result << tuple(axe).reduce([]) { |y, member|
+          data = (member[0] == :member) ? member[1] : member[:member]
+          if ( data.class == Hash || data.size == 1 )
+            y << [data[:caption].strip].flatten 
+          else
+            y << data.select { |item_data| item_data.class == Hash }.reduce([]) do |z,item_data| 
+              z << item_data[:caption].strip 
+            end
+          end
+        }
+      end
     end
 
     private
@@ -44,21 +64,6 @@ module XMLA
       [ ( (0..y_size - 1).reduce([]) { |header| header << '' } << x_axe).flatten ]
     end
 
-    def axes
-      axes = all_axes.select { |axe| axe[:@name] != "SlicerAxis" }
-      @axes ||= axes.reduce([]) do |result, axe|
-        result << tuple(axe).reduce([]) { |y, member|
-          data = (member[0] == :member) ? member[1] : member[:member]
-          if ( data.class == Hash || data.size == 1 )
-            y << [data[:caption].strip].flatten 
-          else
-            y << data.select { |item_data| item_data.class == Hash }.reduce([]) do |z,item_data| 
-              z << item_data[:caption].strip 
-            end
-          end
-        }
-      end
-    end
 
     def initialize(query, catalog)
       @query = query
