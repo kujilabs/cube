@@ -18,6 +18,10 @@ module XMLA
       OlapResult.new(Cube.new(query, catalog).as_table)
     end
 
+    def Cube.execute_members(query, catalog = XMLA.catalog)
+      Cube.new(query, catalog).axes
+    end
+
     def Cube.execute_scalar(query, catalog = XMLA.catalog)
       BigDecimal.new Cube.new(query, catalog).as_table[0]
     end
@@ -25,6 +29,22 @@ module XMLA
     def as_table 
       return [table] if y_size == 0
       clean_table(table, y_size).reduce([]) { |result, row| result << row.flatten }
+    end
+
+    def axes
+      axes = all_axes.select { |axe| axe[:@name] != "SlicerAxis" }
+      @axes ||= axes.reduce([]) do |result, axe|
+        result << tuple(axe).reduce([]) { |y, member|
+          data = (member[0] == :member) ? member[1] : member[:member]
+          if ( data.class == Hash || data.size == 1 )
+            y << [data[:caption].strip].flatten 
+          else
+            y << data.select { |item_data| item_data.class == Hash }.reduce([]) do |z,item_data| 
+              z << item_data[:caption].strip 
+            end
+          end
+        }
+      end
     end
 
     private
@@ -44,21 +64,6 @@ module XMLA
       [ ( (0..y_size - 1).reduce([]) { |header| header << '' } << x_axe).flatten ]
     end
 
-    def axes
-      axes = all_axes.select { |axe| axe[:@name] != "SlicerAxis" }
-      @axes ||= axes.reduce([]) do |result, axe|
-        result << tuple(axe).reduce([]) { |y, member|
-          data = (member[0] == :member) ? member[1] : member[:member]
-          if ( data.class == Hash || data.size == 1 )
-            y << [data[:caption].strip].flatten 
-          else
-            y << data.select { |item_data| item_data.class == Hash }.reduce([]) do |z,item_data| 
-              z << item_data[:caption].strip 
-            end
-          end
-        }
-      end
-    end
 
     def initialize(query, catalog)
       @query = query
@@ -100,7 +105,7 @@ module XMLA
       return [""] if cell_data.nil? 
       @data ||= cell_data.reduce([]) do |data, cell|
         cell[1].reduce(data) do |data, value|
-          data << (value.class == Hash ?  value[:value] : value[1] )
+          data << (value.class == Hash ? (value[:fmt_value] || value[:value]) : value[1] )
         end
       end
     end
@@ -108,40 +113,40 @@ module XMLA
     def tuple axe 
       axe[:tuples].nil? ? [] : axe[:tuples][:tuple]
     end
-    
+
     def all_axes
       @response.to_hash[:execute_response][:return][:root][:axes][:axis]
     end
-    
+
     def x_axe 
       @x_axe ||= axes[0] 
     end
-    
+
     def y_axe
       @y_axe ||= axes[1]
     end
-    
+
     def y_size 
       (y_axe.nil? || y_axe[0].nil?) ? 0 : y_axe[0].size
     end
-    
+
     def x_size
       x_axe.size
     end
 
     def Cube.request_body(query, catalog)
       <<-REQUEST
-        <Command>
-          <Statement> <![CDATA[ #{query} ]]> </Statement> 
+      <Command>
+      <Statement> <![CDATA[ #{query} ]]> </Statement> 
         </Command>
         <Properties>
-          <PropertyList> 
-            <Catalog>#{catalog}</Catalog>
-            <Format>Multidimensional</Format> 
-            <AxisFormat>TupleFormat</AxisFormat>
-          </PropertyList> 
+        <PropertyList> 
+        <Catalog>#{catalog}</Catalog>
+        <Format>Multidimensional</Format> 
+        <AxisFormat>TupleFormat</AxisFormat>
+        </PropertyList> 
         </Properties>
-      REQUEST
+        REQUEST
     end
   end
 end
