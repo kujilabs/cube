@@ -100,7 +100,7 @@ module XMLA
       return [""] if cell_data.nil? 
       @data ||= cell_data.reduce([]) do |data, cell|
         cell[1].reduce(data) do |data, value|
-          data << (value.class == Hash ?  value[:value] : value[1] )
+          data << (value.class == Hash ? (value[:fmt_value] || value[:value]) : value[1] )
         end
       end
     end
@@ -108,40 +108,40 @@ module XMLA
     def tuple axe 
       axe[:tuples].nil? ? [] : axe[:tuples][:tuple]
     end
-    
+
     def all_axes
       @response.to_hash[:execute_response][:return][:root][:axes][:axis]
     end
-    
+
     def x_axe 
       @x_axe ||= axes[0] 
     end
-    
+
     def y_axe
       @y_axe ||= axes[1]
     end
-    
+
     def y_size 
       (y_axe.nil? || y_axe[0].nil?) ? 0 : y_axe[0].size
     end
-    
+
     def x_size
       x_axe.size
     end
 
     def Cube.request_body(query, catalog)
       <<-REQUEST
-        <Command>
-          <Statement> <![CDATA[ #{query} ]]> </Statement> 
+      <Command>
+      <Statement> <![CDATA[ #{query} ]]> </Statement> 
         </Command>
         <Properties>
-          <PropertyList> 
-            <Catalog>#{catalog}</Catalog>
-            <Format>Multidimensional</Format> 
-            <AxisFormat>TupleFormat</AxisFormat>
-          </PropertyList> 
+        <PropertyList> 
+        <Catalog>#{catalog}</Catalog>
+        <Format>Multidimensional</Format> 
+        <AxisFormat>TupleFormat</AxisFormat>
+        </PropertyList> 
         </Properties>
-      REQUEST
+        REQUEST
     end
   end
 end
