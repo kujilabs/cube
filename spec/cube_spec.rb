@@ -116,4 +116,28 @@ describe XMLA::Cube do
 
   end
 
+  describe "getting the members only" do
+    before { configure_mondrian }
+
+    it "should allow queries with just column" do
+      VCR.use_cassette('member_query', :match_requests_on => [:body]) do
+        result = XMLA::Cube.execute_members <<-MDX
+        SELECT { [Category].[Energy].Children } on COLUMNS
+        FROM [Carbon]
+        MDX
+        result.should == [[["Electricity"], ["Natural Gas"]]]
+      end
+    end
+
+    it "should allow queries with just column" do
+      VCR.use_cassette('member_query', :match_requests_on => [:body] ) do
+        result = XMLA::Cube.execute_members <<-MDX
+        SELECT { [Category].[Energy].Children } on COLUMNS,
+               { [Entity].LastChild } on ROWS
+        FROM [Carbon]
+        MDX
+        result.should == [[["Electricity"], ["Natural Gas"]], [["Wrythe Green Surgery - General Practitioner"]]]
+      end
+    end
+  end
 end

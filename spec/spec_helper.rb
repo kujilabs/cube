@@ -19,8 +19,8 @@ end
 #     c.catalog = "Husky"
 #   end
 # end
-#
-#
+
+
 def configure_icube
   XMLA.configure do |c|
     c.endpoint = "http://localhost:8282/icCube/xmla"
