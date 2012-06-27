@@ -21,7 +21,7 @@ Gem::Specification.new do |gem|
   gem.version = Cube::VERSION
 
 
-  gem.add_dependency "savon", ">= 0"
+  gem.add_dependency "savon", "0.9.9"
   gem.add_dependency "webmock", ">= 0"
 
 end
