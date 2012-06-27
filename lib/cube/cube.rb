@@ -37,10 +37,12 @@ module XMLA
         result << tuple(axe).reduce([]) { |y, member|
           data = (member[0] == :member) ? member[1] : member[:member]
           if ( data.class == Hash || data.size == 1 )
-            y << [data[:caption].strip].flatten 
+            # y << [data[:caption].strip].flatten 
+            y << [data].flatten
           else
-            y << data.select { |item_data| item_data.class == Hash }.reduce([]) do |z,item_data| 
-              z << item_data[:caption].strip 
+            y << data.select { |item_data| item_data.class == Hash }.reduce([]) do |z,item_data|
+              z << item_data
+              # z << item_data[:caption].strip 
             end
           end
         }
@@ -54,7 +56,7 @@ module XMLA
       if (header.size == 1 && y_size == 0)
         cell_data[0]
       else
-        (0...y_axe.size).reduce(header) do |result, j| 
+        (0...y_axe.size).reduce(header) do |result, j|
           result << ( y_axe[j] + (0...x_size).map { |i| "#{cell_data[i + j]}" })
         end
       end
@@ -105,7 +107,8 @@ module XMLA
       return [""] if cell_data.nil? 
       @data ||= cell_data.reduce([]) do |data, cell|
         cell[1].reduce(data) do |data, value|
-          data << (value.class == Hash ? (value[:fmt_value] || value[:value]) : value[1] )
+          # data << (value.class == Hash ? (value[:fmt_value] || value[:value]) : value[1] )
+          data << [(value.class == Hash ? (value) : value[1] )]
         end
       end
     end
