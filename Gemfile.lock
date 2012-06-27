@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    kuji-cube (1.5.2)
+    kuji-cube (1.5.3)
       httpi (= 0.9.5)
       savon (= 0.9.7)
       wasabi (= 2.0.0)

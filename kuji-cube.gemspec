@@ -21,9 +21,9 @@ Gem::Specification.new do |gem|
   gem.version = Cube::VERSION
 
 
-  gem.add_dependency "savon", "0.9.7"
   gem.add_dependency "httpi", "0.9.5"
   gem.add_dependency "wasabi", "2.0.0"
+  gem.add_dependency "savon", "0.9.7"
 
 
 # Using addressable (2.2.6) 
