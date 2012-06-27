@@ -1,9 +1,8 @@
 PATH
   remote: .
   specs:
-    cube (1.4.0)
-      savon
-      webmock
+    kuji-cube (1.5.2)
+      savon (= 0.9.7)
 
 GEM
   remote: http://rubygems.org/
@@ -25,7 +24,6 @@ GEM
     linecache19 (0.5.13)
       ruby_core_source (>= 0.1.4)
     nokogiri (1.5.0)
-    nokogiri (1.5.0-java)
     nori (1.0.2)
     rack (1.4.1)
     rbx-require-relative (0.0.9)
@@ -73,10 +71,11 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (>= 1.0.0)
-  cube!
+  kuji-cube!
   linecache19 (>= 0.5.13)
   rspec (~> 2.8.0)
   ruby-debug
   ruby-debug-base19 (>= 0.11.26)
   ruby-debug19
   vcr
+  webmock

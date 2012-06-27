@@ -10,6 +10,7 @@ group :development, :test do
   gem 'ruby-debug-base19', '>= 0.11.26', :platforms => :mri_19
   gem 'ruby-debug19', :require => 'ruby-debug', :platforms => :mri_19
   gem "vcr"
+  gem 'webmock'
   gem "rspec", "~> 2.8.0"
   gem "bundler", ">= 1.0.0"
 end
