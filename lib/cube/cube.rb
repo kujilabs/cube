@@ -57,7 +57,7 @@ module XMLA
         cell_data[0]
       else
         (0...y_axe.size).reduce(header) do |result, j|
-          result << ( y_axe[j] + (0...x_size).map { |i| "#{cell_data[i + j]}" })
+          result << ( y_axe[j] + (0...x_size).map { |i| cell_data[i + j] })
         end
       end
     end
@@ -108,7 +108,7 @@ module XMLA
       @data ||= cell_data.reduce([]) do |data, cell|
         cell[1].reduce(data) do |data, value|
           # data << (value.class == Hash ? (value[:fmt_value] || value[:value]) : value[1] )
-          data << (value.class == Hash ? (value) : value[1] )
+          data << (value.class == Hash ? value : {:value => value[1]} )
         end
       end
     end
