@@ -39,9 +39,10 @@ module XMLA
           if ( data.class == Hash || data.size == 1 )
             # y << [data[:caption].strip].flatten 
             y << [data].flatten
+            # y << [Hash[*data.map{|d| [d.first,d.last.to_s]}.flatten]].flatten
           else
             y << data.select { |item_data| item_data.class == Hash }.reduce([]) do |z,item_data|
-              z << item_data
+              z << [item_data].flatten
               # z << item_data[:caption].strip 
             end
           end
@@ -57,7 +58,7 @@ module XMLA
         cell_data[0]
       else
         (0...y_axe.size).reduce(header) do |result, j|
-          result << ( y_axe[j] + (0...x_size).map { |i| cell_data[i + j] })
+          result << ( y_axe[j] + (0...x_size).map { |i| cell_data[i + j + ((x_size - 1) * j)] })
         end
       end
     end
@@ -70,6 +71,7 @@ module XMLA
     def initialize(query, catalog)
       @query = query
       @catalog = catalog
+      # @response.http.raw_body
       @response = get_response
       self
     end
@@ -108,6 +110,7 @@ module XMLA
       @data ||= cell_data.reduce([]) do |data, cell|
         cell[1].reduce(data) do |data, value|
           # data << (value.class == Hash ? (value[:fmt_value] || value[:value]) : value[1] )
+          # data << Hash[*(value.class == Hash ? value : {:value => value[1]} ).map{|d| [d.first,d.last.to_s]}.flatten]
           data << (value.class == Hash ? value : {:value => value[1]} )
         end
       end
