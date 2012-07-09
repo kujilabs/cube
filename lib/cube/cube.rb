@@ -92,7 +92,7 @@ module XMLA
       table.reduce([]) { |result, row|
         result <<  row.each_with_index.map do |item,i|
           if i == number_of_colums
-            item 
+            item
           else
             item == above_row[i] ? '' : item 
           end
@@ -104,12 +104,9 @@ module XMLA
 
     def cell_data
       cell_data = @response.to_hash[:execute_response][:return][:root][:cell_data]
-      return [""] if cell_data.nil? 
-      @data ||= cell_data.reduce([]) do |data, cell|
-        cell[1].reduce(data) do |data, value|
-          # data << (value.class == Hash ? (value[:fmt_value] || value[:value]) : value[1] )
-          data << (value.class == Hash ? value : {:value => value[1]} )
-        end
+      return {} if cell_data.nil?
+      @data ||= cell_data[:cell].reduce({}) do |data,cell|
+        data.tap{|data| data[cell.delete(:@cell_ordinal).to_i] = cell}
       end
     end
 
