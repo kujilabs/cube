@@ -23,7 +23,7 @@ module XMLA
     end
 
     def Cube.execute_scalar(query, catalog = XMLA.catalog)
-      BigDecimal.new Cube.new(query, catalog).as_table[0]
+      BigDecimal.new Cube.new(query, catalog).as_table[0][:value]
     end
 
     def as_table
@@ -107,9 +107,9 @@ module XMLA
     def cell_data
       cell_data = @response.to_hash[:execute_response][:return][:root][:cell_data]
       return {} if cell_data.nil?
-      @data ||= cell_data[:cell].reduce({}) do |data,cell|
+      @data ||= [(cell_data[:cell])].flatten.reduce({}) do |data,cell|
         data.tap do|data|
-          data[cell.delete(:@cell_ordinal).to_i] = cell.class == Hash ? cell : {:value => cell[1]}
+          data[cell.delete(:@cell_ordinal).to_i] = cell.class == Hash ? cell : {:value => cell[1]} rescue debugger
         end
       end
     end

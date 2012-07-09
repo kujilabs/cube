@@ -44,7 +44,7 @@ describe XMLA::Cube do
        <Format>Multidimensional</Format><AxisFormat>TupleFormat</AxisFormat></PropertyList></Properties>".gsub("\n","").gsub(" ","")
   end
 
-  it 'should connect to mondrian', :focus => true do
+  it 'should connect to mondrian' do
     configure_mondrian
 
     VCR.use_cassette('mondrian_broj_intervencija') do
