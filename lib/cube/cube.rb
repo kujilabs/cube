@@ -26,7 +26,7 @@ module XMLA
       BigDecimal.new Cube.new(query, catalog).as_table[0]
     end
 
-    def as_table 
+    def as_table
       return [table] if y_size == 0
       clean_table(table, y_size).reduce([]) { |result, row| result << row.flatten }
     end
@@ -37,12 +37,13 @@ module XMLA
         result << tuple(axe).reduce([]) { |y, member|
           data = (member[0] == :member) ? member[1] : member[:member]
           if ( data.class == Hash || data.size == 1 )
-            # y << [data[:caption].strip].flatten 
+            # y << [data[:caption].strip].flatten
             y << [data].flatten
+            # y << [Hash[*data.map{|d| [d.first,d.last.to_s]}.flatten]].flatten
           else
             y << data.select { |item_data| item_data.class == Hash }.reduce([]) do |z,item_data|
-              z << item_data
-              # z << item_data[:caption].strip 
+              z << [item_data].flatten
+              # z << item_data[:caption].strip
             end
           end
         }
@@ -57,7 +58,7 @@ module XMLA
         cell_data[0]
       else
         (0...y_axe.size).reduce(header) do |result, j|
-          result << ( y_axe[j] + (0...x_size).map { |i| cell_data[i + j] })
+          result << ( y_axe[j] + (0...x_size).map { |i| cell_data[i + j + ((x_size - 1) * j)] })
         end
       end
     end
@@ -70,6 +71,7 @@ module XMLA
     def initialize(query, catalog)
       @query = query
       @catalog = catalog
+      # @response.http.raw_body
       @response = get_response
       self
     end
@@ -94,7 +96,7 @@ module XMLA
           if i == number_of_colums
             item
           else
-            item == above_row[i] ? '' : item 
+            item == above_row[i] ? '' : item
           end
         end
         above_row = row
@@ -106,11 +108,13 @@ module XMLA
       cell_data = @response.to_hash[:execute_response][:return][:root][:cell_data]
       return {} if cell_data.nil?
       @data ||= cell_data[:cell].reduce({}) do |data,cell|
-        data.tap{|data| data[cell.delete(:@cell_ordinal).to_i] = cell}
+        data.tap do|data|
+          data[cell.delete(:@cell_ordinal).to_i] = cell.class == Hash ? cell : {:value => cell[1]}
+        end
       end
     end
 
-    def tuple axe 
+    def tuple axe
       axe[:tuples].nil? ? [] : axe[:tuples][:tuple]
     end
 
@@ -118,15 +122,15 @@ module XMLA
       @response.to_hash[:execute_response][:return][:root][:axes][:axis]
     end
 
-    def x_axe 
-      @x_axe ||= axes[0] 
+    def x_axe
+      @x_axe ||= axes[0]
     end
 
     def y_axe
       @y_axe ||= axes[1]
     end
 
-    def y_size 
+    def y_size
       (y_axe.nil? || y_axe[0].nil?) ? 0 : y_axe[0].size
     end
 
@@ -137,14 +141,14 @@ module XMLA
     def Cube.request_body(query, catalog)
       <<-REQUEST
       <Command>
-      <Statement> <![CDATA[ #{query} ]]> </Statement> 
+      <Statement> <![CDATA[ #{query} ]]> </Statement>
         </Command>
         <Properties>
-        <PropertyList> 
+        <PropertyList>
         <Catalog>#{catalog}</Catalog>
-        <Format>Multidimensional</Format> 
+        <Format>Multidimensional</Format>
         <AxisFormat>TupleFormat</AxisFormat>
-        </PropertyList> 
+        </PropertyList>
         </Properties>
         REQUEST
     end
