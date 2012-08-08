@@ -28,7 +28,11 @@ module XMLA
 
     def as_table
       return [table] if y_size == 0
-      clean_table(table, y_size).reduce([]) { |result, row| result << row.flatten }
+      clean_table(table).reduce([]) { |result, row|
+        flat_row = row.flatten
+        result << flat_row unless flat_row.all?(&:blank?)
+        result
+      }
     end
 
     def axes
@@ -58,7 +62,9 @@ module XMLA
         cell_data[0]
       else
         (0...y_axe.size).reduce(header) do |result, j|
-          result << ( y_axe[j] + (0...x_size).map { |i| cell_data[i + j + ((x_size - 1) * j)] })
+          values = (0...x_size).map { |i| cell_data[i + j + ((x_size - 1) * j)] }
+          result << ( y_axe[j] + values) if values.any?{|d| !d.blank? && !d[:value].blank? } && y_axe[j].any?{|d| !d.blank? }
+          result
         end
       end
     end
@@ -71,8 +77,8 @@ module XMLA
     def initialize(query, catalog)
       @query = query
       @catalog = catalog
-      # @response.http.raw_body
       @response = get_response
+      # puts @response.http.raw_body
       self
     end
 
@@ -88,20 +94,10 @@ module XMLA
     end
 
     #cleanup table so items don't repeat (if they are same)
-    def clean_table(table, number_of_colums)
-      above_row = []
-      #filter if they are not last column, and they are same as the item on the row above
-      table.reduce([]) { |result, row|
-        result <<  row.each_with_index.map do |item,i|
-          if i == number_of_colums
-            item
-          else
-            item == above_row[i] ? '' : item
-          end
-        end
-        above_row = row
-        result
-      }
+    def clean_table(table)
+      table.uniq_by do |row|
+        row.map(&:hash).join
+      end
     end
 
     def cell_data
