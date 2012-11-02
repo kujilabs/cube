@@ -96,7 +96,7 @@ module XMLA
     #cleanup table so items don't repeat (if they are same)
     def clean_table(table)
       table.uniq_by do |row|
-        row.map(&:hash).join
+        row.map{|c| (c[:u_name] rescue nil || c) }
       end
     end
 
