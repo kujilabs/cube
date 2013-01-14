@@ -88,6 +88,8 @@ module XMLA
         wsdl.endpoint = XMLA.endpoint
       end
 
+      client.http.open_timeout = 2200
+      client.http.read_timeout = 2200
       @response = client.request :execute,  xmlns:"urn:schemas-microsoft-com:xml-analysis" do
         soap.body = Cube.request_body(query, catalog)
       end
